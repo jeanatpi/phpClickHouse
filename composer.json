@@ -1,9 +1,9 @@
 {
-  "name": "jeanatpi/phpclickhouse",
+  "name": "smi2/phpclickhouse",
   "type": "library",
   "description": "PHP ClickHouse Client (fork from smi2/phpClickHouse)",
   "keywords": ["clickhouse", "driver", "client", "curl", "http", "HTTP client", "php"],
-  "homepage": "https://github.com/jeanatpi/phpClickHouse",
+  "homepage": "https://github.com/smi2/phpClickHouse",
   "license": "MIT",
   "authors": [
     {
