@@ -61,8 +61,13 @@ final class FormatQueryTest extends TestCase
         // max_execution_time - is integer in clickhouse source - Seconds
         $this->client->database('default');
 
-        $timeout = 0.55; // un support, "clickhouse source - Seconds"
-        $this->client->setTimeout($timeout);      // 1500 ms
+        $timeout = 1.515; // un support, "clickhouse source - Seconds"
+        $this->client->setTimeout($timeout);      // 550 ms
+        $this->client->select('SELECT 123,123 as ping ')->rows();
+        $this->assertSame(intval($timeout), intval($this->client->getTimeout()));
+
+        $timeout = 2.55; // un support, "clickhouse source - Seconds"
+        $this->client->setTimeout($timeout);      // 550 ms
         $this->client->select('SELECT 123,123 as ping ')->rows();
         $this->assertSame(intval($timeout), intval($this->client->getTimeout()));
 
@@ -71,12 +76,14 @@ final class FormatQueryTest extends TestCase
         $this->client->select('SELECT 123,123 as ping ')->rows();
         $this->assertSame(intval($timeout), $this->client->getTimeout());
 
-
         // getConnectTimeOut is curl, can be float
         $timeout = 5.14;
         $this->client->setConnectTimeOut($timeout);      // 5 seconds
         $this->client->select('SELECT 123,123 as ping ')->rows();
+
+
         $this->assertSame(5.14, $this->client->getConnectTimeOut());
+
     }
 
 

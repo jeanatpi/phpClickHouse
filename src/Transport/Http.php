@@ -95,6 +95,12 @@ class Http
      * @var null|resource
      */
     private $stdErrOut = null;
+
+    /**
+     * @var null|resource
+     */
+    private $handle = null;
+
     /**
      * Http constructor.
      * @param string $host
@@ -113,7 +119,7 @@ class Http
             $this->_authMethod = $authMethod;
         }
 
-        $this->_settings = new Settings($this);
+        $this->_settings = new Settings();
 
         $this->setCurler();
     }
@@ -266,7 +272,8 @@ class Http
         }
 
         $new->timeOut($this->settings()->getTimeOut());
-        $new->connectTimeOut($this->_connectTimeOut);//->keepAlive(); // one sec
+        $new->connectTimeOut($this->_connectTimeOut);
+        $new->keepAlive();
         $new->verbose(boolval($this->_verbose));
 
         return $new;
@@ -301,11 +308,11 @@ class Http
          */
 
         if ($query->isUseInUrlBindingsParams()) {
-            $urlParams=array_replace_recursive($query->getUrlBindingsParams());
+            $urlParams = array_replace_recursive($urlParams, $query->getUrlBindingsParams());
         }
+
         $url = $this->getUrl($urlParams);
         $new->url($url);
-
 
         if (!$query_as_string) {
             $new->parameters_json($sql);
@@ -626,6 +633,10 @@ class Http
 
         $query = $this->prepareQuery($sql, $bindings);
 
+        if (strpos($sql, 'ON CLUSTER') === false) {
+            return $this->getRequestWrite($query);
+        }
+
         if (strpos($sql, 'CREATE') === 0 || strpos($sql, 'DROP') === 0 || strpos($sql, 'ALTER') === 0) {
             $query->setFormat('JSON');
         }
@@ -744,12 +755,10 @@ class Http
 
             $request->header('Transfer-Encoding', 'chunked');
 
-
             if ($streamRW->isWrite()) {
                 $request->setReadFunction($callable);
             } else {
                 $request->setWriteFunction($callable);
-
 
 //                $request->setHeaderFunction($callableHead);
             }

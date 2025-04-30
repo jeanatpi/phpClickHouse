@@ -40,6 +40,7 @@ class Client
 {
     const SUPPORTED_FORMATS = ['TabSeparated', 'TabSeparatedWithNames', 'CSV', 'CSVWithNames', 'JSONEachRow', 'CSVWithNamesAndTypes', 'TSVWithNamesAndTypes'];
 
+
     /** @var Http */
     private $transport;
 
@@ -52,7 +53,7 @@ class Client
     /** @var string */
     private $connectHost;
 
-    /** @var string */
+    /** @var int */
     private $connectPort;
 
     /** @var int */
@@ -68,19 +69,19 @@ class Client
     public function __construct(array $connectParams, array $settings = [])
     {
         if (!isset($connectParams['username'])) {
-            throw  new \InvalidArgumentException('not set username');
+            throw new \InvalidArgumentException('not set username');
         }
 
         if (!isset($connectParams['password'])) {
-            throw  new \InvalidArgumentException('not set password');
+            throw new \InvalidArgumentException('not set password');
         }
 
         if (!isset($connectParams['port'])) {
-            throw  new \InvalidArgumentException('not set port');
+            throw new \InvalidArgumentException('not set port');
         }
 
         if (!isset($connectParams['host'])) {
-            throw  new \InvalidArgumentException('not set host');
+            throw new \InvalidArgumentException('not set host');
         }
 
         if (array_key_exists('auth_method', $connectParams)) {
@@ -89,7 +90,7 @@ class Client
                     'Invalid value for "auth_method" param. Should be one of [%s].',
                     json_encode(Http::AUTH_METHODS_LIST)
                 );
-                throw  new \InvalidArgumentException($errorMessage);
+                throw new \InvalidArgumentException($errorMessage);
             }
 
             $this->authMethod = $connectParams['auth_method'];
@@ -97,7 +98,7 @@ class Client
 
         $this->connectUsername = $connectParams['username'];
         $this->connectPassword = $connectParams['password'];
-        $this->connectPort = $connectParams['port'];
+        $this->connectPort = intval($connectParams['port']);
         $this->connectHost = $connectParams['host'];
 
         // init transport class
@@ -164,7 +165,7 @@ class Client
      *
      * @return bool
      */
-    public function enableQueryConditions()
+    public function enableQueryConditions(): bool
     {
         return $this->transport->addQueryDegeneration(new Conditions());
     }
@@ -174,22 +175,22 @@ class Client
      *
      * @param string $host
      */
-    public function setHost($host)
+    public function setHost($host): void
     {
         $this->connectHost = $host;
         $this->transport()->setHost($host);
     }
 
     /**
-     * @return Settings
+     * max_execution_time , in int value (seconds)
      */
-    public function setTimeout(int $timeout)
+    public function setTimeout($timeout): Settings
     {
-        return $this->settings()->max_execution_time($timeout);
+        return $this->settings()->max_execution_time(intval($timeout));
     }
 
     /**
-     * @return float
+     * @return int
      */
     public function getTimeout(): int
     {
@@ -199,7 +200,7 @@ class Client
     /**
      * ConnectTimeOut in seconds ( support 1.5 = 1500ms )
      */
-    public function setConnectTimeOut(float $connectTimeOut)
+    public function setConnectTimeOut(float $connectTimeOut): void
     {
         $this->transport()->setConnectTimeOut($connectTimeOut);
     }
@@ -215,10 +216,10 @@ class Client
     /**
      * @return Http
      */
-    public function transport()
+    public function transport(): Http
     {
         if (!$this->transport) {
-            throw  new \InvalidArgumentException('Empty transport class');
+            throw new \InvalidArgumentException('Empty transport class');
         }
 
         return $this->transport;
@@ -227,7 +228,7 @@ class Client
     /**
      * @return string
      */
-    public function getConnectHost()
+    public function getConnectHost(): string
     {
         return $this->connectHost;
     }
@@ -235,7 +236,7 @@ class Client
     /**
      * @return string
      */
-    public function getConnectPassword()
+    public function getConnectPassword(): string
     {
         return $this->connectPassword;
     }
@@ -243,9 +244,9 @@ class Client
     /**
      * @return string
      */
-    public function getConnectPort()
+    public function getConnectPort(): string
     {
-        return $this->connectPort;
+        return strval($this->connectPort);
     }
 
     /**
@@ -292,7 +293,7 @@ class Client
      * @param string|null $useSessionId
      * @return $this
      */
-    public function useSession(string $useSessionId = null)
+    public function useSession(string $useSessionId = '')
     {
         if (!$this->settings()->getSessionId()) {
             if (!$useSessionId) {
@@ -383,14 +384,15 @@ class Client
     }
 
     /**
-     * @param mixed[] $bindings
+     * @param string $sql
+     * @param array $bindings
      * @return Statement
      */
     public function select(
         string $sql,
         array $bindings = [],
-        WhereInFile $whereInFile = null,
-        WriteToFile $writeToFile = null
+        ?WhereInFile $whereInFile = null,
+        ?WriteToFile $writeToFile = null
     )
     {
         return $this->transport()->select($sql, $bindings, $whereInFile, $writeToFile);
@@ -437,8 +439,8 @@ class Client
     public function selectAsync(
         string $sql,
         array $bindings = [],
-        WhereInFile $whereInFile = null,
-        WriteToFile $writeToFile = null
+        ?WhereInFile $whereInFile = null,
+        ?WriteToFile $writeToFile = null
     )
     {
         return $this->transport()->selectAsync($sql, $bindings, $whereInFile, $writeToFile);
@@ -612,7 +614,7 @@ class Client
 
         foreach ($fileNames as $fileName) {
             if (!is_file($fileName) || !is_readable($fileName)) {
-                throw  new QueryException('Cant read file: ' . $fileName . ' ' . (is_file($fileName) ? '' : ' is not file'));
+                throw new QueryException('Cant read file: ' . $fileName . ' ' . (is_file($fileName) ? '' : ' is not file'));
             }
 
             if (empty($columns)) {
@@ -805,14 +807,14 @@ class Client
     /**
      * List of partitions
      *
-     * @return mixed[][]
+     * @return array
      * @throws \Exception
      */
-    public function partitions(string $table, int $limit = null, bool $active = null)
+    public function partitions(string $table, int $limit = 0, ?bool $active = null)
     {
         $database = $this->settings()->getDatabase();
         $whereActiveClause = $active === null ? '' : sprintf(' AND active = %s', (int)$active);
-        $limitClause = $limit !== null ? ' LIMIT ' . $limit : '';
+        $limitClause = $limit > 0 ? ' LIMIT ' . $limit : '';
 
         return $this->select(<<<CLICKHOUSE
 SELECT *

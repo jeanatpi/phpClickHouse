@@ -1,12 +1,9 @@
 PHP ClickHouse wrapper
 ======================
 
-[![Build Status](https://travis-ci.org/smi2/phpClickHouse.svg)](https://travis-ci.org/smi2/phpClickHouse)
 [![Downloads](https://poser.pugx.org/smi2/phpClickHouse/d/total.svg)](https://packagist.org/packages/smi2/phpClickHouse)
 [![Packagist](https://poser.pugx.org/smi2/phpClickHouse/v/stable.svg)](https://packagist.org/packages/smi2/phpClickHouse)
 [![Licence](https://poser.pugx.org/smi2/phpClickHouse/license.svg)](https://packagist.org/packages/smi2/phpClickHouse)
-[![Quality Score](https://scrutinizer-ci.com/g/smi2/phpClickHouse/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/smi2/phpClickHouse)
-[![Code Coverage](https://scrutinizer-ci.com/g/smi2/phpClickHouse/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/smi2/phpClickHouse)
 
 ## Features
 
@@ -47,7 +44,9 @@ if (!$db->ping()) echo 'Error connect';
 Last stable version for 
 * php 5.6 <= `1.1.2`
 * php 7.2 <= `1.3.10`
-* php 7.3 >= `1.4.x`
+* php 7.3 >= `1.4.x ... 1.5.X` 
+* php 8.4 >= `1.6.0`
+
 
 [Packagist](https://packagist.org/packages/smi2/phpclickhouse)
 
@@ -59,7 +58,8 @@ $config = [
     'host' => '192.168.1.1',
     'port' => '8123',
     'username' => 'default',
-    'password' => ''
+    'password' => '',
+    'https' => true
 ];
 $db = new ClickHouseDB\Client($config);
 $db->database('default');
